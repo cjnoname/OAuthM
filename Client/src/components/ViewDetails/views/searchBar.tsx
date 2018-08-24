@@ -39,6 +39,6 @@ SearchBar = reduxForm({
 
 export default connect(
   (state: ApplicationState) => ({
-    initialValues: state.viewDetails.searchDetailsRequest
+    initialValues: state.viewDetails.searchDetailsRequest ? state.viewDetails.searchDetailsRequest.toObject() : undefined
   })
 )(SearchBar as any) as any;
