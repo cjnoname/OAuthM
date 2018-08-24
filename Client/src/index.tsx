@@ -1,3 +1,4 @@
+import 'react-hot-loader/patch';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { AppContainer } from 'react-hot-loader';
@@ -6,18 +7,24 @@ import { ConnectedRouter } from 'react-router-redux';
 import { createBrowserHistory } from 'history';
 import configureStore from './configureStore';
 import { ApplicationState } from './store';
-import Routes from './routes';
+import * as RoutesModule from './routes';
+let routes = RoutesModule.routes;
 
-const history = createBrowserHistory({ basename: document.getElementsByTagName('base')[0].getAttribute('href')! });
-const store = configureStore(history, (window as any).initialReduxState as ApplicationState);
+// Create browser history to use in the Redux store
+const baseUrl = document.getElementsByTagName('base')[0].getAttribute('href')!;
+const history = createBrowserHistory({ basename: baseUrl });
 
-async function renderApp() {
+// Get the application-wide store instance, prepopulating with state from the server where available.
+const initialState = (window as any).initialReduxState as ApplicationState;
+const store = configureStore(history, initialState);
+
+function renderApp() {
+  // This code starts up the React app when it runs in a browser. It sets up the routing configuration
+  // and injects the app into a DOM element.
   ReactDOM.render(
     <AppContainer>
       <Provider store={store}>
-        <ConnectedRouter history={history}>
-          <Routes />
-        </ConnectedRouter>
+        <ConnectedRouter history={history} children={routes} />
       </Provider>
     </AppContainer>,
     document.getElementById('react-app')
@@ -25,3 +32,11 @@ async function renderApp() {
 }
 
 renderApp();
+
+// Allow Hot Module Replacement
+if (module.hot) {
+  module.hot.accept('./routes', () => {
+    routes = require<typeof RoutesModule>('./routes').routes;
+    renderApp();
+  });
+}

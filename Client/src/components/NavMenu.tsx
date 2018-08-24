@@ -1,32 +1,21 @@
 import * as React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Route } from 'react-router-dom';
-import Typography from '@material-ui/core/Typography';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
-import StarIcon from '@material-ui/icons/Star';
-import LockIcon from '@material-ui/icons/Lock';
-import CloudIcon from '@material-ui/icons/Cloud';
+import Typography from 'material-ui/Typography';
+import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List';
+import InboxIcon from 'material-ui-icons/MoveToInbox';
+import StarIcon from 'material-ui-icons/Star';
 
 export const titles = (
-  <>
-    <Route
-      path="/home"
+  <div>
+    <Route path="/home"
       render={props => <Typography variant="title" color="inherit" noWrap>Home</Typography>}
     />
-    <Route
-      path="/viewDetails"
+    <Route path="/viewDetails"
       render={props => <Typography variant="title" color="inherit" noWrap>View Details</Typography>}
     />
-    <Route
-      path="/oauthWizard"
-      render={props => <Typography variant="title" color="inherit" noWrap>OAuth Wizard</Typography>}
-    />
-  </>
-);
+  </div>
+)
 
 interface Props {
   handleDrawerClose: () => void
@@ -36,24 +25,18 @@ export const Menus = (props: Props) => {
   const { handleDrawerClose } = props;
   return (
     <List>
-      <ListItem onClick={props.handleDrawerClose} component={(props: any) => <NavLink to="/home" {...props} />} button>
+      <ListItem onClick={props.handleDrawerClose} component={props => <NavLink to="/home" {...props} />} button>
         <ListItemIcon>
           <InboxIcon />
         </ListItemIcon>
         <ListItemText primary="Home" />
       </ListItem>
-      <ListItem onClick={props.handleDrawerClose} component={(props: any) => <NavLink to="/viewDetails" {...props} />} button>
+      <ListItem onClick={props.handleDrawerClose} component={props => <NavLink to="/viewDetails" {...props} />} button>
         <ListItemIcon>
           <StarIcon />
         </ListItemIcon>
-        <ListItemText primary="OAuth Lookup" />
+        <ListItemText primary="OAuth" />
       </ListItem>
-      {/* <ListItem onClick={props.handleDrawerClose} component={(props: any) => <NavLink to="/oauthWizard" {...props} />} button>
-        <ListItemIcon>
-          <LockIcon />
-        </ListItemIcon>
-        <ListItemText primary="OAuthWizard" />
-      </ListItem> */}
     </List>
   );
-};
+}

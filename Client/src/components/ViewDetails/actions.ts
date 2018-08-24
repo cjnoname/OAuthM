@@ -1,4 +1,4 @@
-import { Client, ISearchDetailsRequest } from 'models/oAuth';
+import { Client } from './models';
 import { getOAuthAction } from './workers/viewDetails';
 
 export enum ActionTypes {
@@ -8,17 +8,16 @@ export enum ActionTypes {
 }
 
 export interface GetOAuthStarted {
-  type: ActionTypes.GET_OAUTH_STARTED
+  type: ActionTypes.GET_OAUTH_STARTED;
 }
 
 export interface GetOAuthSucceeded {
-  type: ActionTypes.GET_OAUTH_SUCCEEDED
-  client?: Client,
-  request?: ISearchDetailsRequest
+  type: ActionTypes.GET_OAUTH_SUCCEEDED;
+  client?: Client;
 }
 
 export interface GetOAuthFailed {
-  type: ActionTypes.GET_OAUTH_FAILED
+  type: ActionTypes.GET_OAUTH_FAILED;
 }
 
 export type KnownAction = GetOAuthStarted | GetOAuthSucceeded | GetOAuthFailed;

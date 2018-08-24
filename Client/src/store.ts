@@ -1,11 +1,12 @@
-import { OAuthState, ViewDetailsState } from 'models/reducers';
+import { OAuthState } from './components/OAuth/models';
 import { OAuthReducer } from './components/OAuth/reducers';
+import { ViewDetailsState } from './components/ViewDetails/models';
 import { OAuthViewReducer } from './components/ViewDetails/reducers';
 
 // The top-level state object
 export interface ApplicationState {
-  oAuth: OAuthState,
-  viewDetails: ViewDetailsState
+  oAuth: OAuthState;
+  viewDetails: ViewDetailsState;
 }
 
 // Whenever an action is dispatched, Redux will update each top-level application state property using

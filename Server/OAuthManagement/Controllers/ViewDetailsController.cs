@@ -23,7 +23,9 @@ namespace OAuthManagement.Controllers
                 return BadRequest("Request is null");
             }
 
-            return Ok(await _oAuthService.GetDetails(request));
+            var res = await _oAuthService.GetDetails(request);
+
+            return Ok(res);
         }
     }
 }

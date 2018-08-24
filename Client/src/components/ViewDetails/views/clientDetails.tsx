@@ -1,15 +1,17 @@
 import * as React from 'react';
+import { List } from 'immutable';
 import {
   Table,
   TableHead,
   TableBody,
   TableRow,
   TableCell
-} from 'UI/Table';
-import { Client } from 'models/oAuth';
+} from '../../../shared/UI/Table';
+import { Client, ClientResourceAccess } from '../models';
+import ClientResourceAccessDetails from './clientResourceAccessDetails';
 
 interface Props {
-  client: Client
+  client: Client;
 }
 
 const ClientDetails = (props: Props) => {
@@ -34,6 +36,6 @@ const ClientDetails = (props: Props) => {
       </TableBody>
     </Table>
   );
-};
+}
 
 export default ClientDetails;

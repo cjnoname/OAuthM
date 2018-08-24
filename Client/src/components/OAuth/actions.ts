@@ -1,5 +1,5 @@
-import { OAuthRequest } from 'models/oAuth';
-import { saveOAuth } from './workers/saveOAuth';
+import { OAuthRequest } from './models';
+import { saveOAuth } from './workers/saveOAuth'
 
 export enum ActionTypes {
   SAVE_OAUTH_STARTED = 'SAVE_OAUTH_STARTED',
@@ -8,16 +8,16 @@ export enum ActionTypes {
 }
 
 export interface SaveOAuthStarted {
-  type: ActionTypes.SAVE_OAUTH_STARTED,
-  data: OAuthRequest
+  type: ActionTypes.SAVE_OAUTH_STARTED;
+  data: OAuthRequest;
 }
 
 export interface SaveOAuthSucceeded {
-  type: ActionTypes.SAVE_OAUTH_SUCCEEDED
+  type: ActionTypes.SAVE_OAUTH_SUCCEEDED;
 }
 
 export interface SaveOAuthFailed {
-  type: ActionTypes.SAVE_OAUTH_FAILED
+  type: ActionTypes.SAVE_OAUTH_FAILED;
 }
 
 export type KnownAction = SaveOAuthStarted | SaveOAuthSucceeded | SaveOAuthFailed;

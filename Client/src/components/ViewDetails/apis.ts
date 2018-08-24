@@ -1,3 +1,3 @@
-import server from 'utils/server';
+import server from '../../utils/server';
 
-export const getOAuth = <T>(data: any) => server.get<T>('ViewDetails/GetDetails', data);
+export const getOAuth = (data: any) => server.get("ViewDetails/GetDetails", data);

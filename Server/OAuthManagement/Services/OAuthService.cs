@@ -4,74 +4,37 @@ using OAuthManagement.Interfaces;
 using OAuthManagement.Models.OAuthDb;
 using OAuthManagement.Models.Requests;
 using Microsoft.EntityFrameworkCore;
-using OAuthManagement.Models.LotusDb;
-using System.Linq;
-using OAuthManagement.Models.ViewModels;
-using AutoMapper;
-using System;
 
 namespace OAuthManagement.Services
 {
     public class OAuthService : IOAuthService
     {
-        private readonly OAuthContext _oAuthContext;
-        private readonly LotusContext _lotusContext;
-        private readonly IMapper _mapper;
+        private readonly OAuthContext oAuthContext;
 
-        public OAuthService(
-            OAuthContext oAuthContext,
-            LotusContext lotusContext,
-            IMapper mapper)
+        public OAuthService(OAuthContext oAuthContext)
         {
-            _oAuthContext = oAuthContext;
-            _lotusContext = lotusContext;
-            _mapper = mapper;
+            this.oAuthContext = oAuthContext;
         }
 
-        public async Task<ClientViewModel> GetDetails(SearchDetailsRequest request)
+        public async Task<Client> GetDetails(SearchDetailsRequest request)
         {
             var clientId = (!string.IsNullOrWhiteSpace(request.Token)
-                ? (await _oAuthContext.AccessToken.SingleOrDefaultAsync(x => x.Token == request.Token))?.ClientId
+                ? (await oAuthContext.AccessToken.SingleOrDefaultAsync(x => x.Token == request.Token))?.ClientId
                 : request.ClientId)?.Trim();
 
-            if (string.IsNullOrWhiteSpace(clientId))
-            {
-                return null;
-            }
-
-            var client = _mapper.Map<ClientViewModel>(await _oAuthContext.Client.SingleOrDefaultAsync(x => x.ClientId == clientId));
-            client.ClientImpersonations1 = await _oAuthContext.ClientImpersonation.Where(x => x.ImpersonateClientId == clientId).ToListAsync();
-            client.ClientImpersonations2 = await _oAuthContext.ClientImpersonation.Where(x => x.ClientId == clientId).ToListAsync();
-            client.ClientGrantTypes = await _oAuthContext.ClientGrantType.Where(x => x.ClientId == clientId).ToListAsync();
-            client.ClientIdentities = await _oAuthContext.ClientIdentity.Where(x => x.ClientId == clientId).ToListAsync();
-            client.ClientParameters = await _oAuthContext.ClientParameter.Where(x => x.ClientId == clientId).ToListAsync();
-            client.ClientAccessParameters = await _oAuthContext.ClientAccessParameter.Where(x => x.ClientId == clientId).ToListAsync();
-            client.ClientResourceAccesses = await _oAuthContext.ClientResourceAccess.Where(x => x.ClientId == clientId).ToListAsync();
-
-            var place = (clientId.Length == 6 && char.IsNumber(clientId[5])) ? clientId.Substring(0, 5) : null;
-            if (place != null)
-            {
-                client.TblSysUsers = await _lotusContext.TblSysUser.Where(x => x.UserName.StartsWith(place)).ToListAsync();
-                using (var reader = (await _oAuthContext.Database.ExecuteSqlCommandAsync($"SELECT * FROM dbo.OriginPromoter WHERE Place='{place}'")).DbDataReader)
-                {
-                    client.OriginPromoters = reader.Select(row => new OriginPromoter
-                    {
-                        // didn't check null due to the restrictions of database which is secure
-                        Place = row[0].ToString(),
-                        Promoter = row[1].ToString(),
-                        CanSell = (Boolean)row[2],
-                        CanReport = (Boolean)row[3]
-                    }).ToList();
-                }
-            }
-
-            return client;
+            return string.IsNullOrEmpty(clientId)
+                ? null
+                : await oAuthContext.Client
+                    .Include(x => x.ClientAccessParameter)
+                    .Include(x => x.ClientResourceAccess)
+                    .Include(x => x.ClientImpersonationClient)
+                    .SingleOrDefaultAsync(x => x.ClientId == clientId);
         }
 
         public async Task UpdateOAuthDb(OAuthDbUpdateRequest request)
         {
             // Create client basic information
-            await _oAuthContext.Client.AddAsync(new Client
+            await oAuthContext.Client.AddAsync(new Client
             {
                 ClientId = request.ClientId,
                 Secret = request.ClientSecret,
@@ -79,7 +42,7 @@ namespace OAuthManagement.Services
             });
 
             // Configure standard token expiry 
-            await _oAuthContext.ClientConfig.AddAsync(new ClientConfig
+            await oAuthContext.ClientConfig.AddAsync(new ClientConfig
             {
                 ClientId = request.ClientId,
                 MaxActiveAccessTokens = 50,
@@ -88,7 +51,7 @@ namespace OAuthManagement.Services
             });
 
             // Configure the NewClient to be able access the resources of the defined seller
-            await _oAuthContext.ClientAccessParameter.AddRangeAsync(new List<ClientAccessParameter>
+            await oAuthContext.ClientAccessParameter.AddRangeAsync(new List<ClientAccessParameter>
             {
                 new ClientAccessParameter
                 {
@@ -141,7 +104,7 @@ namespace OAuthManagement.Services
                 }
             });
 
-            await _oAuthContext.ClientParameter.AddAsync(new ClientParameter
+            await oAuthContext.ClientParameter.AddAsync(new ClientParameter
             {
                 ClientId = request.ClientId,
                 Key = "username",
@@ -149,7 +112,7 @@ namespace OAuthManagement.Services
             });
 
             // Allow MobileAppServices to impersonate the new client
-            await _oAuthContext.ClientImpersonation.AddAsync(new ClientImpersonation
+            await oAuthContext.ClientImpersonation.AddAsync(new ClientImpersonation
             {
                 ClientId = "MobileAppServices",
                 ImpersonateClientId = request.ClientId,
@@ -157,7 +120,7 @@ namespace OAuthManagement.Services
             });
 
             // Confiugre the resources the client has access
-            await _oAuthContext.ClientResourceAccess.AddRangeAsync(
+            await oAuthContext.ClientResourceAccess.AddRangeAsync(
                 new List<ClientResourceAccess>
                 {
                     new ClientResourceAccess
@@ -169,7 +132,7 @@ namespace OAuthManagement.Services
                 }
             );
 
-            await _oAuthContext.SaveChangesAsync();
+            await oAuthContext.SaveChangesAsync();
         }
     }
 }

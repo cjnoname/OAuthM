@@ -1,78 +1,75 @@
-import { IException, isNoContent } from 'utils/error';
+// import { getUser } from "./security";
 
 const sharedHeaders = {
-  Accept: 'application/json',
-  'Content-Type': 'application/json'
-};
-
-enum HttpMethods {
-  GET = 'GET',
-  POST = 'POST',
-  PUT = 'PUT',
-  PATCH = 'PATCH',
-  DELETE = 'DELETE'
+  Accept: "application/json",
+  "Content-Type": "application/json"
 }
 
-const buildURL = (path: string) => {
-  if (path.indexOf('?') > 0) {
+enum HttpMethods {
+  GET = "GET",
+  POST = "POST",
+  PUT = "PUT",
+  PATCH = "PATCH",
+  DELETE = "DELETE"
+}
+
+//   const user = getUser();
+//   if (user.accessToken) {
+//     headers.Authorization = `Bearer ${user.accessToken}`;
+//   }
+//   return headers;
+// }
+
+function buildURL(path: string) {
+  if (path.indexOf("?") > 0) {
     return `api/${path}&nocache=${Math.random()}`;
   }
-  return `api/${path}?nocache=${Math.random()}`;
-};
+  return `/api/${path}?nocache=${Math.random()}`;
+}
 
-const get = <T>(path: string, data?: any, options = {}): Promise<T | undefined> => {
+function get(path: string, data?: any, options = {}) {
   path = data ? `${path}?${getQueryString(data)}` : path;
   return doFetch(path, null, HttpMethods.GET, options);
-};
+}
 
-const getQueryString = (params: any) => (
-  Object
+function getQueryString(params: any) {
+  return Object
     .keys(params)
     .map(k => {
       if (Array.isArray(params[k])) {
         return params[k]
           .map((val: any) => `${encodeURIComponent(k)}[]=${encodeURIComponent(val)}`)
-          .join('&');
+          .join('&')
       }
 
-      return `${encodeURIComponent(k)}=${encodeURIComponent(params[k])}`;
+      return `${encodeURIComponent(k)}=${encodeURIComponent(params[k])}`
     })
-    .join('&'));
+    .join('&')
+}
 
-const post = <T>(path: string, data: any, options = {}): Promise<T | undefined> => (
-  doFetch(path, data, HttpMethods.POST, options));
+function post(path: string, data: any, options = {}) {
+  return doFetch(path, data, HttpMethods.POST, options);
+}
 
-const put = <T>(path: string, data: any, options = {}): Promise<T | undefined> => (
-  doFetch(path, data, HttpMethods.PUT, options));
+function put(path: string, data: any, options = {}) {
+  return doFetch(path, data, HttpMethods.PUT, options);
+}
 
-const del = <T>(path: string, data: any, options = {}): Promise<T | undefined> =>
-  (doFetch(path, data, HttpMethods.DELETE, options));
+function del(path: string, data: any, options = {}) {
+  return doFetch(path, data, HttpMethods.DELETE, options);
+}
 
-const doFetch = async (path: string, data: any, method: HttpMethods, options = {}) => {
-  const request = {
-    method,
+function doFetch(path: string, data: any, method: HttpMethods, options = {}) {
+  return fetch(buildURL(path), {
+    method: method,
     headers: {
       ...options,
       ...sharedHeaders
-    }
-  } as any;
-  if (method !== HttpMethods.GET) {
-    request.body = data ? JSON.stringify(data) : null;
+    },
+    body: data ? JSON.stringify(data) : null
   }
-  try {
-    const response = await fetch(buildURL(path), request);
-    if (!response.ok) {
-      const error: IException = { httpCode: response.status, message: await response.json() };
-      throw error;
-    }
-    return isNoContent(response) ? undefined : await response.json();
-  } catch (e) {
-    if (e.httpCode) {
-      // console.log(e.message);
-    }
-    // console.log(e);
-  }
-};
+  );
+}
 
 export default {
   buildURL,

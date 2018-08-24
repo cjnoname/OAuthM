@@ -27,9 +27,9 @@
 			"Type": "AWS::Serverless::Function",
 			"Properties": {
 				"Handler": "OAuthManagement::OAuthManagement.LambdaEntryPoint::FunctionHandlerAsync",
-				"Runtime": "dotnetcore2.1",
+				"Runtime": "dotnetcore2.0",
 				"CodeUri": "",
-				"MemorySize": 3006,
+				"MemorySize": 1024,
 				"Timeout": 30,
 				"Role": { "Ref": "IAMRole" },
 				"Policies": [ "AWSLambdaFullAccess" ],
@@ -57,9 +57,9 @@
 			"Type": "AWS::Serverless::Function",
 			"Properties": {
 				"Handler": "OAuthManagement::OAuthManagement.LambdaEntryPoint::FunctionHandlerAsync",
-				"Runtime": "dotnetcore2.1",
+				"Runtime": "dotnetcore2.0",
 				"CodeUri": "",
-				"MemorySize": 3006,
+				"MemorySize": 512,
 				"Timeout": 30,
 				"Role": { "Ref": "IAMRole" },
 				"Policies": [ "AWSLambdaFullAccess" ],

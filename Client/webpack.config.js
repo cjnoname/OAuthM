@@ -6,26 +6,13 @@ module.exports = (env, argv) => {
   const isDevBuild = argv.mode !== 'production';
   const targetPath = isDevBuild ? path.join(__dirname, 'dist') : path.join(__dirname, '..', 'Server', 'OAuthManagement', 'wwwroot', 'dist');
   const config = {
-    stats: { modules: false, performance: false },
-    resolve: {
-      extensions: ['.js', '.jsx', '.ts', '.tsx'],
-      alias: {
-        models: path.resolve(__dirname, './src/models/'),
-        enums: path.resolve(__dirname, './src/enums/'),
-        utils: path.resolve(__dirname, './src/utils/'),
-        UI: path.resolve(__dirname, './src/UI/'),
-        shared: path.resolve(__dirname, './src/shared/'),
-        store: path.resolve(__dirname, './src/store')
-      }
-    },
-    entry: {
-      client: './src/index.tsx'
-    },
+    stats: { modules: false },
+    resolve: { extensions: ['.js', '.jsx', '.ts', '.tsx'] },
+    entry: { 'main-client': './src/index.tsx' },
     module: {
       rules: [
-        {
-          test: /\.tsx?$/, include: /src/, use: 'awesome-typescript-loader?silent=true'
-        }
+        { test: /\.tsx?$/, include: /src/, use: 'awesome-typescript-loader?silent=true' },
+        { test: /\.(png|jpg|jpeg|gif|svg)$/, use: 'url-loader?limit=25000' },
       ]
     },
     output: {
@@ -34,48 +21,33 @@ module.exports = (env, argv) => {
       path: targetPath
     },
     plugins: [
+      new webpack.DllReferencePlugin({
+        context: __dirname,
+        manifest: require(path.join(targetPath, 'vendor-manifest.json'))
+      }),
       new CheckerPlugin()
     ],
+    devServer: {
+      proxy: [{
+        context: ["/api"],
+        target: "http://localhost:5000",
+        open: true,
+        openPage: 'http://localhost:3000'
+      }]
+    },
     performance: {
       hints: false
     }
   };
 
   if (isDevBuild) {
-    config.devServer = {
-      proxy: [{
-        context: ["/api", "/images", "/css"],
-        target: "http://localhost:5000",
-        open: true,
-        openPage: 'http://localhost:3000'
-      }]
-    };
-    config.module.rules.push(
-      {
-        test: /\.(ts|tsx)$/,
-        enforce: 'pre',
-        loader: 'tslint-loader'
-      }
-    );
     config.plugins.push(
       new webpack.SourceMapDevToolPlugin({
         filename: '[file].map',
         moduleFilenameTemplate: path.relative(targetPath, '[resourcePath]')
       })
-    );
-  } else {
-    config.optimization = {
-      splitChunks: {
-        cacheGroups: {
-          commons: {
-            test: /node_modules/,
-            name: "vendor",
-            chunks: "all"
-          }
-        }
-      }
-    };
+    )
   }
 
-  return config;
+  return [config];
 };

@@ -1,30 +1,36 @@
-import { AppThunkAction } from 'store';
-import { AnyAction } from 'redux';
-import { stringify } from 'query-string';
-import { push } from 'react-router-redux';
+import { AppThunkAction } from '../../../store';
 import { KnownAction, ActionTypes, GetOAuthSucceeded } from '../actions';
-import { IException, isNoContent } from 'utils/error';
-import * as Api from '../apis';
-import { Client, ISearchDetailsRequest, SearchDetailsRequest } from 'models/oAuth';
-import { ViewDetailsState } from 'models/reducers';
+import { IException, isException, isNoContent } from '../../../utils/error';
+import * as Api from "../apis";
+import { ViewDetailsState, Client, ISearchDetailsRequest } from '../models';
 
-export const getOAuthAction = (request: ISearchDetailsRequest): AppThunkAction<AnyAction> => async (dispatch, getState) => {
+export const getOAuthAction = (request: ISearchDetailsRequest): AppThunkAction<KnownAction> => async (dispatch, getState) => {
   try {
     dispatch({ type: ActionTypes.GET_OAUTH_STARTED });
-    const client = await Api.getOAuth<Client>(request);
-    dispatch(push(`/viewDetails?${stringify(request)}`));
-    dispatch({ type: ActionTypes.GET_OAUTH_SUCCEEDED, client, request });
+    const response = await Api.getOAuth(request);
+    if (!response.ok) {
+      throw { httpCode: response.status, message: await response.json() } as IException;
+    }
+    const data = isNoContent(response) ? undefined : await response.json();
+    dispatch({ type: ActionTypes.GET_OAUTH_SUCCEEDED, client: data });
   } catch (e) {
-    dispatch({ type: ActionTypes.GET_OAUTH_FAILED });
+    if (isException(e)) {
+      console.log(e.httpCode, e.message);
+      dispatch({ type: ActionTypes.GET_OAUTH_FAILED });
+    }
+    else {
+      //jump to exception page
+      console.log("e!:", e);
+    }
   }
-};
+}
 
-export const getOAuthStarted = (state: ViewDetailsState) => state.set('isLoading', true);
+export const getOAuthStarted = (state: ViewDetailsState) => state.set("isLoading", true);
 
-export const getOAuthSucceeded = (state: ViewDetailsState, action: GetOAuthSucceeded) =>
-  state
-    .set('client', action.client ? new Client(action.client) : undefined)
-    .set('searchDetailsRequest', action.request ? new SearchDetailsRequest(action.request) : undefined)
-    .set('isLoading', false);
+export const getOAuthSucceeded = (state: ViewDetailsState, action: GetOAuthSucceeded) => {
+  return state
+    .set("client", action.client ? new Client(action.client) : undefined)
+    .set("isLoading", false);
+}
 
-export const getOAuthFailed = (state: ViewDetailsState) => state.set('isLoading', false);
+export const getOAuthFailed = (state: ViewDetailsState) => state.set("isLoading", false);

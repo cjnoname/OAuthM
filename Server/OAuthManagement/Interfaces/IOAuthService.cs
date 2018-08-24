@@ -1,12 +1,12 @@
-﻿using OAuthManagement.Models.Requests;
-using OAuthManagement.Models.ViewModels;
+﻿using OAuthManagement.Models.OAuthDb;
+using OAuthManagement.Models.Requests;
 using System.Threading.Tasks;
 
 namespace OAuthManagement.Interfaces
 {
     public interface IOAuthService
     {
-        Task<ClientViewModel> GetDetails(SearchDetailsRequest request);
+        Task<Client> GetDetails(SearchDetailsRequest request);
         Task UpdateOAuthDb(OAuthDbUpdateRequest request);
     }
 }

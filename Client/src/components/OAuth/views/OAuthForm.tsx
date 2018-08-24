@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { Field, reduxForm } from 'redux-form';
+import { Field, reduxForm } from 'redux-form'
 
-const OAuthForm = (props: any) => {
-  const { handleSubmit } = props;
+let OAuthForm = (props: any) => {
+  const { handleSubmit } = props
   return (
     <form onSubmit={handleSubmit}>
       <div>
@@ -27,8 +27,8 @@ const OAuthForm = (props: any) => {
       </div>
       <button type="submit">Submit</button>
     </form>
-  );
-};
+  )
+}
 
 export default reduxForm({
   form: 'oauth'

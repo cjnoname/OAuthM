@@ -1,14 +1,14 @@
 import * as React from 'react';
+import { withStyles, WithStyles } from 'material-ui/styles';
+import AppBar from 'material-ui/AppBar';
+import Toolbar from 'material-ui/Toolbar';
+import Drawer from 'material-ui/Drawer';
+import IconButton from 'material-ui/IconButton';
+import Hidden from 'material-ui/Hidden';
+import Divider from 'material-ui/Divider';
+import MenuIcon from 'material-ui-icons/Menu';
 import { titles, Menus } from './NavMenu';
-import { withRoot } from 'shared/HOC/withRoot';
-import { withStyles, WithStyles } from '@material-ui/core/styles';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import Drawer from '@material-ui/core/Drawer';
-import IconButton from '@material-ui/core/IconButton';
-import Hidden from '@material-ui/core/Hidden';
-import Divider from '@material-ui/core/Divider';
-import MenuIcon from '@material-ui/icons/Menu';
+import { withRoot } from '../utils/withRoot';
 
 const drawerWidth = 240;
 const decorate = withStyles(({ breakpoints, mixins, palette, spacing }) => ({
@@ -18,9 +18,8 @@ const decorate = withStyles(({ breakpoints, mixins, palette, spacing }) => ({
     zIndex: 1,
     overflow: 'hidden' as 'hidden',
     position: 'relative' as 'relative',
-    display: 'flex' as 'flex',
-    width: '100%',
-    minHeight: '100vh'
+    display: 'flex',
+    width: '100%'
   },
   appBar: {
     position: 'absolute' as 'absolute',
@@ -31,41 +30,48 @@ const decorate = withStyles(({ breakpoints, mixins, palette, spacing }) => ({
   },
   navIconHide: {
     [breakpoints.up('md')]: {
-      display: 'none' as 'none',
+      display: 'none',
     },
   },
   toolbar: mixins.toolbar,
   drawerPaper: {
     width: drawerWidth,
-    height: '100%',
     [breakpoints.up('md')]: {
-      position: 'relative' as 'relative',
+      position: 'relative',
     },
-  },
-  drawerDocked: {
-    height: '100%'
   },
   content: {
     flexGrow: 1,
+    backgroundColor: palette.background.default,
     padding: spacing.unit * 3,
   }
 }));
 
 const MyLayout = decorate(
-  class extends React.Component<WithStyles<'root' | 'appBar' | 'navIconHide' | 'toolbar' | 'drawerPaper' | 'content' | 'drawerDocked'>, {}> {
-    public state = {
+  class extends React.Component<WithStyles<'root' | 'appBar' | 'navIconHide' | 'toolbar' | 'drawerPaper' | 'content'>, {}> {
+    state = {
       mobileOpen: false,
     };
+
+    handleDrawerToggle = () => {
+      this.setState({ mobileOpen: !this.state.mobileOpen });
+    };
+
+    handleDrawerClose = (e: Event) => {
+      if (this.state.mobileOpen) {
+        this.setState({ mobileOpen: false });
+      }
+    }
 
     public render() {
       const { classes } = this.props;
 
       const drawer = (
-        <>
+        <div>
           <div className={classes.toolbar} />
           <Divider />
           <Menus handleDrawerClose={this.handleDrawerClose.bind(this)} />
-        </>
+        </div>
       );
 
       return (
@@ -104,8 +110,7 @@ const MyLayout = decorate(
               variant="permanent"
               open
               classes={{
-                docked: classes.drawerDocked,
-                paper: classes.drawerPaper
+                paper: classes.drawerPaper,
               }}
             >
               {drawer}
@@ -117,16 +122,6 @@ const MyLayout = decorate(
           </div>
         </div>
       );
-    }
-
-    private handleDrawerToggle = () => {
-      this.setState({ mobileOpen: !this.state.mobileOpen });
-    }
-
-    private handleDrawerClose = (e: Event) => {
-      if (this.state.mobileOpen) {
-        this.setState({ mobileOpen: false });
-      }
     }
   }
 );
